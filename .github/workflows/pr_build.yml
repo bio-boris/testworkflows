@@ -2,15 +2,6 @@
 name: Pull Request Build, Tag, & Push
 on:
   pull_request:
-    branches:
-      - develop
-      - main
-      - master
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - closed
   push:
 jobs:
   trivy-scans:
