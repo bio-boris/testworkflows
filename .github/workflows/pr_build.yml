@@ -31,18 +31,8 @@ jobs:
           # limit-severities-for-sarif: true
 
 
-      # - name: Upload Trivy scan results to GitHub Security tab for PR 
-      #   # Always run this step to upload results, even if the scan step failed
-      #   if: always()
-      #   uses: github/codeql-action/upload-sarif@v3
-      #   with:
-      #     sarif_file: "trivy-results.sarif"
-      #     category: 'trivy-docker-scan'
-
         
       - name: Upload Trivy scan results to GitHub Security tab
-        # Always run this step to upload results, even if the scan step failed
-        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: "trivy-results.sarif"
