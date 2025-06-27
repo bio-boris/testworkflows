@@ -1,10 +1,51 @@
 ---
-name: Pull Request Build, Tag, & Push
+name: Run Trivy Scans
+
 on:
-  pull_request:
-  push:
+  workflow_call:
+
 jobs:
-  trivy-scans:
-    if: (github.base_ref == 'develop' || github.base_ref == 'main' || github.base_ref == 'master' ) && github.event.pull_request.merged == false
-    uses: bio-boris/.github/.github/workflows/reusable_trivy-scans.yml@add-sbom
-    secrets: inherit
+  build-and-scan-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Check out GitHub Repo
+        uses: actions/checkout@v4
+
+      - name: Build an image from Dockerfile
+        run: |
+          docker build -t kbase/trivy:scan . 
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "kbase/trivy:scan"
+          format: "sarif"
+          output: "trivy-results.sarif"
+          timeout: "20m"
+
+          # severity: 'HIGH,CRITICAL,MEDIUM,LOW'
+          # limit-severities-for-sarif: true
+
+
+      # - name: Upload Trivy scan results to GitHub Security tab for PR 
+      #   # Always run this step to upload results, even if the scan step failed
+      #   if: always()
+      #   uses: github/codeql-action/upload-sarif@v3
+      #   with:
+      #     sarif_file: "trivy-results.sarif"
+      #     category: 'trivy-docker-scan'
+
+        
+      - name: Upload Trivy scan results to GitHub Security tab
+        # Always run this step to upload results, even if the scan step failed
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "trivy-results.sarif"
+          category: 'trivy-docker-scan'
+          ref: 'refs/heads/${{ github.base_ref }}'
+          sha: '${{ github.event.pull_request.head.sha }}'
