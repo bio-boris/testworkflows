@@ -2,7 +2,7 @@
 name: Run Trivy Scans
 
 on:
-  workflow_call:
+  pull_request:
 
 jobs:
   build-and-scan-image:
